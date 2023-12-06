@@ -1,7 +1,8 @@
 #include <networkinterface.hpp>
+#include <iostream>
 
 std::string exec_json(std::string const&);
-
+const uint32_t size32 = sizeof(uint32_t);
 using tcp=asio::ip::tcp;
       void session::read_rest(char* buffer, std::size_t length){
         auto self(shared_from_this());
@@ -21,11 +22,12 @@ using tcp=asio::ip::tcp;
             auto self(shared_from_this());
             try {
                 size_t reply_length = asio::read(socket_,
-                asio::buffer(&length, sizeof( uint32_t)));
+                asio::buffer(&length, size32));
               } catch(std::exception &ex){
                  //std::cout<<ex.what();
                  return;
               }
+            std::cout << "len=" << length << std::endl;
             if (length > 1024 *1024) {// greater than 1MB
                     //ToDo: Log message
                     return;
@@ -35,6 +37,7 @@ using tcp=asio::ip::tcp;
                 [this,  self](std::error_code ec, std::size_t len)
                 {
                  if (!ec) {
+
                   if(len < (std::size_t)length)
                    read_rest(inp_data_+len, length -len);
                   else
@@ -46,13 +49,15 @@ using tcp=asio::ip::tcp;
       void session::do_write(uint32_t len)
       {
         auto self(shared_from_this());
-        out_data_ = new char[len+sizeof(uint32_t)];
+        out_data_ = new char[len+size32];
         //Todo Compute out_data_
-        std::string out = exec_json(inp_data_);
-        //strncpy(out_data_+sizeof(uint32_t),inp_data_, len);
-        //*(uint32_t*)out_data_ = length;
+        std::string request(inp_data_, len);
+        std::string out = exec_json(request);
+        uint32_t out_len = out.length();
+        strncpy(out_data_+size32,out.c_str(), out_len);
+        *(uint32_t*)out_data_ = out_len;
         //ToDO use hton
-        asio::async_write(socket_, asio::buffer(out_data_, len+sizeof(uint32_t)),
+        asio::async_write(socket_, asio::buffer(out_data_, len+size32),
             [this, self](std::error_code ec, std::size_t )
             {
 	             delete [] inp_data_;

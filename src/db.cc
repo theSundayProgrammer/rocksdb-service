@@ -58,7 +58,13 @@ namespace { }
   options.OptimizeLevelStyleCompaction();
   std::cout << options.compression << std::endl;
   std::cout << root << std::endl;
+  std::cout << path << std::endl;
+ROCKSDB_NAMESPACE::Options opt;
   ROCKSDB_NAMESPACE::Status status = ROCKSDB_NAMESPACE::DB::Open(options, path, &db);
+  if(!status.ok()){
+    std::cout << "unable to open db "<< status.ToString() << std::endl;
+    return 1;
+  }
   int port = 2153; //ToDo pick port number from configuration
   server server(io_context, port);
   io_context.run();
@@ -120,11 +126,11 @@ std::string exec_json(std::string const& inp)
       reply = put(key,value) ;
     } else if (op == "get"){
       std::string key = root["key"].asString();
-      reply = get(key) ;
+      reply["value"] = get(key) ;
     } else {
       reply["error"] = 2;
     }
   }
   Json::StreamWriterBuilder wbuilder;
-  return Json::writeString(wbuilder, root);
+  return Json::writeString(wbuilder, reply);
 }
