@@ -1,0 +1,12 @@
+// comment head
+{
+  "dbname" : "/tmp/db_test",
+  "options" : 
+  {
+  // comment before
+  "compression" : 2,
+    "create_if_missing" : true
+  }
+}
+// comment after
+// comment tail

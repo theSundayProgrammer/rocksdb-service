@@ -72,6 +72,7 @@ ROCKSDB_NAMESPACE::Options opt;
 }
 Json::Value put(const std::string& key, const std::string& value) 
 {
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   Json::Value err;
   if (db==nullptr){
     err["error"] = -1;
@@ -94,7 +95,7 @@ Json::Value get(const std::string& key)
     err["error"] = -1;
     return err;
   }
-
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   std::string value;
   using ROCKSDB_NAMESPACE::Slice;
   ROCKSDB_NAMESPACE::Status status  = db->Get(ReadOptions(), Slice(key), &value);
@@ -102,8 +103,11 @@ Json::Value get(const std::string& key)
     err["error"] = -2;
   } else {
     err["error"] = 0;
+
+    std::cout <<  "value="<< value << std::endl;
     err["value"] = value;
   }
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
   return err;
 }
 std::string exec_json(std::string const& inp)
@@ -121,16 +125,22 @@ std::string exec_json(std::string const& inp)
     reply["error"] = 0;
     std::string op = root["op"].asString();
     if (op == "put"){
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
       std::string key = root["key"].asString();
       std::string value = root["value"].asString();
       reply = put(key,value) ;
     } else if (op == "get"){
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
       std::string key = root["key"].asString();
-      reply["value"] = get(key) ;
+      reply = get(key) ;
     } else {
       reply["error"] = 2;
     }
   }
-  Json::StreamWriterBuilder wbuilder;
-  return Json::writeString(wbuilder, reply);
+  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+    Json::FastWriter writer;
+    const std::string retval = writer.write(reply);
+  //Json::StreamWriterBuilder wbuilder;
+  //std::string retval= Json::writeString(wbuilder, reply);
+  return retval;
 }
