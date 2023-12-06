@@ -1,4 +1,7 @@
 #include <networkinterface.hpp>
+
+std::string exec_json(std::string const&);
+
 using tcp=asio::ip::tcp;
       void session::read_rest(char* buffer, std::size_t length){
         auto self(shared_from_this());
@@ -44,20 +47,22 @@ using tcp=asio::ip::tcp;
       {
         auto self(shared_from_this());
         out_data_ = new char[len+sizeof(uint32_t)];
-        strncpy(out_data_+sizeof(uint32_t),inp_data_, len);
-        *(uint32_t*)out_data_ = length;
+        //Todo Compute out_data_
+        std::string out = exec_json(inp_data_);
+        //strncpy(out_data_+sizeof(uint32_t),inp_data_, len);
+        //*(uint32_t*)out_data_ = length;
         //ToDO use hton
         asio::async_write(socket_, asio::buffer(out_data_, len+sizeof(uint32_t)),
             [this, self](std::error_code ec, std::size_t )
             {
-            delete [] inp_data_;
-            delete [] out_data_;
-            if (!ec)
-            {
-            do_read();
-            }
-            });
-      }
+	             delete [] inp_data_;
+	             delete [] out_data_;
+	             if (!ec)
+	             {
+	              do_read();
+	             }
+	           });
+	      }
 
 
 server::server(asio::io_context& io_context, short port)

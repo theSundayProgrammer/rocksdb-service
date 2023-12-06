@@ -13,7 +13,9 @@
 #include <utility>
 #include <asio/signal_set.hpp>
 #include <cstring>
+#include <sstream>
 #include "networkinterface.hpp"
+std::string exec_json(std::string const&);
 ROCKSDB_NAMESPACE::Options options ;
 ROCKSDB_NAMESPACE::DB *db=nullptr;
 using ROCKSDB_NAMESPACE::PinnableSlice;
@@ -97,4 +99,32 @@ Json::Value get(const std::string& key)
     err["value"] = value;
   }
   return err;
+}
+std::string exec_json(std::string const& inp)
+{
+  std::stringstream istr(inp);
+  Json::CharReaderBuilder builder;
+  builder["collectComments"] = false;
+  Json::Value root;
+  JSONCPP_STRING errs;
+  Json::Value reply;
+  if (!parseFromStream(builder, istr, &root, &errs)) {
+    std::cout << errs << std::endl;
+    reply["error"] = 1;
+  } else {
+    reply["error"] = 0;
+    std::string op = root["op"].asString();
+    if (op == "put"){
+      std::string key = root["key"].asString();
+      std::string value = root["value"].asString();
+      reply = put(key,value) ;
+    } else if (op == "get"){
+      std::string key = root["key"].asString();
+      reply = get(key) ;
+    } else {
+      reply["error"] = 2;
+    }
+  }
+  Json::StreamWriterBuilder wbuilder;
+  return Json::writeString(wbuilder, root);
 }
