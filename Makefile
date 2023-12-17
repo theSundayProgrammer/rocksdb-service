@@ -13,16 +13,16 @@ T= $(MYNAME)
 U=$(MYTEST)
 
 JSON= \
-		src/json_reader.o \
-		src/json_writer.o \
-		src/json_value.o 
+		obj/json_reader.o \
+		obj/json_writer.o \
+		obj/json_value.o 
 
-OBJS= src/db.o  $(JSON) src/networkinterface.o src/options_json.o 
+OBJS= obj/db.o  $(JSON) obj/networkinterface.o obj/options_json.o 
 
-TESTOBJS= src/test.o $(JSON) 
+TESTOBJS= obj/test.o $(JSON) 
 
-TESTGET= src/testget.o $(JSON)
-%.o: %.cc 
+TESTGET= obj/testget.o $(JSON)
+obj/%.o: src/%.cc 
 	$(CC) $(CFLAGS) -I./include -fPIC -c -o $@ $<
 
 $T:	$(OBJS)
@@ -34,7 +34,7 @@ $U: $(TESTOBJS)
 	$(CC) $(CFLAGS)  $(EXTRACFLAGS) -o $@   $(TESTOBJS)    -lstdc++
 
 clean:
-	rm -f $T $(OBJS)  test testget src/test.o src/testget.o
+	rm -f $T $(OBJS)  test testget obj/test.o obj/testget.o
 
 
 
