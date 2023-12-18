@@ -1,4 +1,4 @@
-#A Service that harbours a Rocksdb database#
+A Service that harbours a Rocksdb database
 
 Language: C++
 
