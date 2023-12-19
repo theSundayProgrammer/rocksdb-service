@@ -57,7 +57,7 @@ using tcp=asio::ip::tcp;
         strncpy(out_data_+size32,out.c_str(), out_len);
         *(uint32_t*)out_data_ = out_len;
         //ToDO use hton
-        asio::async_write(socket_, asio::buffer(out_data_, len+size32),
+        asio::async_write(socket_, asio::buffer(out_data_, out_len+size32),
             [this, self](std::error_code ec, std::size_t )
             {
 	             delete [] inp_data_;
