@@ -170,11 +170,18 @@ std::string exec_json(std::string const& inp)
   } else {
     reply["error"] = 0;
     std::string op = root["op"].asString();
-      std::string dbName = root["name"].asString();
-      auto item_itr = std::find_if(configs.begin(),configs.end(), [&dbName](config const& item){ return item.name == dbName;});
-      if(item_itr == configs.end()) {
-        reply["error"] = 3;
-      } else if (op == "put") {
+    std::string dbName = root["name"].asString();
+    auto item_itr = std::find_if(configs.begin(),configs.end(), [&dbName](config const& item){ return item.name == dbName;});
+    if(item_itr == configs.end()) {
+      reply["error"] = 3;
+    } else if(op == "open"){
+      if(item_itr->is_open)
+        ;//do nothing
+      else {
+        reply= item_itr->open();
+      }
+
+    } else if (op == "put") {
       if(item_itr->is_open) {
         std::string key = root["key"].asString();
         std::string value = root["value"].asString();
@@ -182,15 +189,8 @@ std::string exec_json(std::string const& inp)
       } else {
         reply["error"] = 5;
       }
-    } else if(op == "open"){
-        if(item_itr->is_open)
-          ;//do nothing
-        else {
-          reply= item_itr->open();
-        }
-
-      }
-    }else if (op == "get"){
+    }
+    else if (op == "get"){
       if(item_itr->is_open) {
         std::string key = root["key"].asString();
         reply= item_itr->get(key) ;
@@ -201,11 +201,11 @@ std::string exec_json(std::string const& inp)
       reply["error"] = 2;
     }
   }
-  std::cout << __FILE__ << ":" << __LINE__ << std::endl;
+    std::cout << __FILE__ << ":" << __LINE__ << std::endl;
     Json::FastWriter writer;
     const std::string retval = writer.write(reply);
-  std::cout << "retval = " <<retval << std::endl;
-  //Json::StreamWriterBuilder wbuilder;
-  //std::string retval= Json::writeString(wbuilder, reply);
-  return retval;
-}
+    std::cout << "retval = " <<retval << std::endl;
+    //Json::StreamWriterBuilder wbuilder;
+    //std::string retval= Json::writeString(wbuilder, reply);
+    return retval;
+  }
