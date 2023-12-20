@@ -29,25 +29,23 @@ int main(int argc, char* argv[])
     }
 
     asio::io_context io_context;
+    tcp::socket s(io_context);
+    tcp::resolver resolver(io_context);
+    asio::connect(s, resolver.resolve(argv[1], argv[2]));
     const uint prefix_len = sizeof(uint32_t);
 		Json::Value root;
+    root["name"] = "testdb";
 		root["op"] = "get";
 		root["key"] = "Chakra";
     Json::StreamWriterBuilder builder;
     std::string request = Json::writeString(builder, root);
-    tcp::socket s(io_context);
-    tcp::resolver resolver(io_context);
-    asio::connect(s, resolver.resolve(argv[1], argv[2]));
     char out_data_[max_length ];
 		uint32_t length = request.length();
 		strncpy(out_data_+prefix_len ,request.data(), length);
 		*(uint32_t*)out_data_ = length;
-    std::cout << "length " << *(uint32_t*)out_data_ << std::endl;
     asio::write(s, asio::buffer(out_data_, length+prefix_len));
-    std::cout << "Message sent" << std::endl;
     char reply[max_length];
     size_t reply_length = asio::read(s,asio::buffer(&length, prefix_len));
-    std::cout << "length " << std::hex << length << std::endl;
     reply_length = asio::read(s,asio::buffer(reply, length));
     std::cout << "Reply is: ";
     std::cout.write(reply, reply_length);

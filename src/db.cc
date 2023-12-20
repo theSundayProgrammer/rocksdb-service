@@ -38,6 +38,8 @@ struct config{
   Json::Value open(){
     Json::Value err;
     err["error"] = 0;
+    if (is_open)
+      return err;
     ROCKSDB_NAMESPACE::Status status = ROCKSDB_NAMESPACE::DB::Open(options, path, &db);
     if(!status.ok()){
       std::cout << "unable to open db "<< status.ToString() << std::endl;
@@ -164,48 +166,44 @@ std::string exec_json(std::string const& inp)
   Json::Value root;
   JSONCPP_STRING errs;
   Json::Value reply;
-  if (!parseFromStream(builder, istr, &root, &errs)) {
-    std::cout << errs << std::endl;
-    reply["error"] = 1;
-  } else {
+  do {
+
     reply["error"] = 0;
-    std::string op = root["op"].asString();
+    if (!parseFromStream(builder, istr, &root, &errs)) {
+      std::cout << errs << std::endl;
+      reply["error"] = 1;
+      break;
+    }
     std::string dbName = root["name"].asString();
+    if (dbName.empty()){
+      reply["error"] = 6;
+      break;
+    }
     auto item_itr = std::find_if(configs.begin(),configs.end(), [&dbName](config const& item){ return item.name == dbName;});
     if(item_itr == configs.end()) {
       reply["error"] = 3;
-    } else if(op == "open"){
-      if(item_itr->is_open)
-        ;//do nothing
-      else {
-        reply= item_itr->open();
-      }
-
-    } else if (op == "put") {
-      if(item_itr->is_open) {
-        std::string key = root["key"].asString();
-        std::string value = root["value"].asString();
-        reply = item_itr->put(key,value) ;
-      } else {
-        reply["error"] = 5;
-      }
-    }
-    else if (op == "get"){
-      if(item_itr->is_open) {
-        std::string key = root["key"].asString();
-        reply= item_itr->get(key) ;
-      } else {
-        reply["error"] = 5;
-      }
+      break;
+    } 
+    reply= item_itr->open();
+    if(!item_itr->is_open) {
+      break;
+    } 
+    std::string op = root["op"].asString();
+    if (op == "put") {
+      std::string key = root["key"].asString();
+      std::string value = root["value"].asString();
+      reply = item_itr->put(key,value) ;
+    } else if (op == "get"){
+      std::string key = root["key"].asString();
+      reply= item_itr->get(key) ;
     } else {
-      reply["error"] = 2;
+      reply["error"] = 7;
     }
-  }
+
+  }while(0);
     std::cout << __FILE__ << ":" << __LINE__ << std::endl;
     Json::FastWriter writer;
     const std::string retval = writer.write(reply);
     std::cout << "retval = " <<retval << std::endl;
-    //Json::StreamWriterBuilder wbuilder;
-    //std::string retval= Json::writeString(wbuilder, reply);
     return retval;
   }
