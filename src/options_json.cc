@@ -1,4 +1,6 @@
-#include "db.h"
+#include "rocksdb/db.h"
+#include "rocksdb/slice.h"
+#include "rocksdb/options.h"
 #include <json/value.h>
 #ifdef TESTING_NWC
 #include <iostream>
