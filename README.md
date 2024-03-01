@@ -13,8 +13,7 @@ Creation of the database
 The options used in the creation of the database are described in config.json.
 
 Design
-The config file lists all the databases that are meant to be open by the server. The client listens on a port specified on the commandline. I use 2153 for test.
-Catchtest is 
+The config file lists all the databases that are meant to be open by the server. The server listens on a port specified on the commandline. I use 2153 for test.
 Listed below are the available options. Checks RocksDB docs to find out what they mean.
 Invalid option keys are ignored. 
 * "increase_parallelism" = <int>
@@ -83,7 +82,7 @@ Invalid option keys are ignored.
 
 I use Catchtest as my test framework. The catchtest.cc lists all the five functions currently iimplemented.
 These are
-  - 0: put (put a key-value pair)
+  - put (put a key-value pair)
   - get (get a value given a key)
   - put_cf (put a key-value pair in a named column-family)
   - get_cf(get a value give a key and column-family name)
